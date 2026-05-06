@@ -127,7 +127,11 @@
 }
 
 .pme-danger {
-  background: rgba(255, 0, 0, 0.08);
+  background-color: var(--crimson70a) !important;
+}
+
+.pme-danger:hover {
+  background-color: var(--fullred) !important;
 }
 
 .pme-section-header {
@@ -360,11 +364,21 @@
 }
 
 .pme-persona-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  width: var(--avatar-base-width);
+  height: var(--avatar-base-height);
+  border-radius: var(--avatar-base-border-radius-round);
+  border: 1px solid var(--SmartThemeBorderColor);
+  box-shadow: 0 0 5px var(--black50a);
   object-fit: cover;
   flex: 0 0 auto;
+}
+
+body.square-avatars .pme-persona-avatar {
+  border-radius: var(--avatar-base-border-radius) !important;
+}
+
+body.rounded-avatars .pme-persona-avatar {
+  border-radius: var(--avatar-base-border-radius-rounded) !important;
 }
 
 .pme-persona-meta {
@@ -412,12 +426,12 @@
 }
 
 .pme-persona-lorebook {
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   line-height: 1;
   white-space: nowrap;
   flex: 0 0 auto;
   color: var(--active);
-  opacity: 0.95;
+  opacity: 0.9;
 }
 
 .pme-persona-desc {
@@ -443,7 +457,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  min-height: 132px;
+  min-height: 118px;
   gap: 6px;
   padding: 10px 6px;
   text-align: center;
@@ -461,8 +475,8 @@
 }
 
 .pme-persona-list.pme-persona-grid .pme-persona-avatar {
-  width: 64px;
-  height: 64px;
+  width: var(--avatar-base-width);
+  height: var(--avatar-base-height);
 }
 
 .pme-persona-list.pme-persona-grid .pme-persona-meta {
