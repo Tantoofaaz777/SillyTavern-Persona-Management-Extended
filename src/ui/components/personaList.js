@@ -5,7 +5,15 @@ import {
 } from "/scripts/personas.js";
 import { getThumbnailUrl } from "/script.js";
 
-import { getPersonaSortMode, setPersonaSortMode } from "../../core/mode.js";
+import {
+  getPersonaGridViewEnabled,
+  getPersonaPerPage,
+  getPersonaSortMode,
+  PERSONA_PER_PAGE_OPTIONS,
+  setPersonaGridViewEnabled,
+  setPersonaPerPage,
+  setPersonaSortMode,
+} from "../../core/mode.js";
 import { el } from "./dom.js";
 import { UI_EVENTS } from "../uiBus.js";
 
@@ -101,31 +109,17 @@ export function createPersonaList({ getPowerUser, bus }) {
 
   let query = "";
   let scrollTop = 0;
+  let currentPage = 1;
   let refreshTimer = /** @type {number|undefined} */ (undefined);
   let autoScrollNext = false;
 
   const root = el("div", "pme-card pme-personas");
 
-  const header = el("div", "pme-card-title-row");
-  const titleWrap = el("div", "pme-card-title");
-  titleWrap.textContent = "Personas ";
-  const countEl = el("span", "pme-count", "(0)");
-  titleWrap.appendChild(countEl);
-  header.appendChild(titleWrap);
-
-  const actions = el("div", "pme-actions");
+  const controls = el("div", "pme-persona-controls pme-persona-top-controls");
   let nativeCreateBtn = /** @type {HTMLElement|null} */ (null);
   let nativeCreateRestore = /** @type {{ parent: HTMLElement, nextSibling: ChildNode|null } | null} */ (
     null
   );
-
-  const refreshBtn = el("button", "menu_button menu_button_icon pme-icon-btn");
-  refreshBtn.type = "button";
-  refreshBtn.title = "Refresh list";
-  refreshBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
-  actions.appendChild(refreshBtn);
-  header.appendChild(actions);
-  root.appendChild(header);
 
   function attachNativeCreateButton() {
     const btn = document.getElementById("create_dummy_persona");
@@ -143,8 +137,7 @@ export function createPersonaList({ getPowerUser, bus }) {
 
     nativeCreateBtn = btn;
 
-    // Put Create button to the left of refresh button.
-    actions.insertBefore(btn, refreshBtn);
+    controls.insertBefore(btn, controls.firstChild);
   }
 
   function restoreNativeCreateButton() {
@@ -165,7 +158,6 @@ export function createPersonaList({ getPowerUser, bus }) {
     }
   }
 
-  const controls = el("div", "pme-persona-controls");
   const search = el("input", "text_pole pme-persona-search");
   search.type = "search";
   search.placeholder = "Search...";
@@ -187,6 +179,44 @@ export function createPersonaList({ getPowerUser, bus }) {
   controls.appendChild(search);
   controls.appendChild(sort);
   root.appendChild(controls);
+
+  const pagination = el("div", "pme-persona-pagination");
+  const rangeEl = el("div", "pme-persona-range", "0-0 .. 0");
+
+  const pageButtons = el("div", "pme-persona-page-buttons");
+  const firstPageBtn = el("button", "menu_button menu_button_icon pme-page-btn");
+  firstPageBtn.type = "button";
+  firstPageBtn.title = "First page";
+  firstPageBtn.innerHTML = '<i class="fa-solid fa-angles-left"></i>';
+  const prevPageBtn = el("button", "menu_button menu_button_icon pme-page-btn");
+  prevPageBtn.type = "button";
+  prevPageBtn.title = "Previous page";
+  prevPageBtn.innerHTML = '<i class="fa-solid fa-angle-left"></i>';
+  const nextPageBtn = el("button", "menu_button menu_button_icon pme-page-btn");
+  nextPageBtn.type = "button";
+  nextPageBtn.title = "Next page";
+  nextPageBtn.innerHTML = '<i class="fa-solid fa-angle-right"></i>';
+  const lastPageBtn = el("button", "menu_button menu_button_icon pme-page-btn");
+  lastPageBtn.type = "button";
+  lastPageBtn.title = "Last page";
+  lastPageBtn.innerHTML = '<i class="fa-solid fa-angles-right"></i>';
+  pageButtons.append(firstPageBtn, prevPageBtn, nextPageBtn, lastPageBtn);
+
+  const perPageSelect = el("select", "pme-persona-per-page");
+  perPageSelect.title = "Personas per page";
+  perPageSelect.innerHTML = PERSONA_PER_PAGE_OPTIONS.map(
+    (n) => `<option value="${n}">${n} / page</option>`
+  ).join("");
+
+  const gridToggle = el(
+    "button",
+    "menu_button menu_button_icon pme-grid-toggle"
+  );
+  gridToggle.type = "button";
+  gridToggle.title = "Switch to grid view";
+
+  pagination.append(rangeEl, pageButtons, perPageSelect, gridToggle);
+  root.appendChild(pagination);
 
   const listEl = el("div", "pme-persona-list");
   listEl.textContent = "Loading personas…";
@@ -294,15 +324,44 @@ export function createPersonaList({ getPowerUser, bus }) {
       }
     });
 
+    const perPage = getPersonaPerPage();
+    const total = sorted.length;
+    const totalPages = Math.max(1, Math.ceil(total / perPage));
+    if (autoScroll && user_avatar) {
+      const activeIndex = sorted.indexOf(user_avatar);
+      if (activeIndex !== -1) {
+        currentPage = Math.floor(activeIndex / perPage) + 1;
+      }
+    }
+    currentPage = Math.min(Math.max(1, currentPage), totalPages);
+    const startIndex = total ? (currentPage - 1) * perPage : 0;
+    const endIndex = Math.min(startIndex + perPage, total);
+    const pageItems = sorted.slice(startIndex, endIndex);
+    const isGridView = getPersonaGridViewEnabled();
+
     listEl.innerHTML = "";
-    if (!sorted.length) {
-      countEl.textContent = "(0)";
+    listEl.classList.toggle("pme-persona-grid", isGridView);
+    perPageSelect.value = String(perPage);
+    gridToggle.title = isGridView
+      ? "Switch to list view"
+      : "Switch to grid view";
+    gridToggle.innerHTML = isGridView
+      ? '<i class="fa-solid fa-list"></i>'
+      : '<i class="fa-solid fa-table-cells-large"></i>';
+    rangeEl.textContent = total
+      ? `${startIndex + 1}-${endIndex} .. ${total}`
+      : "0-0 .. 0";
+    firstPageBtn.disabled = currentPage <= 1;
+    prevPageBtn.disabled = currentPage <= 1;
+    nextPageBtn.disabled = currentPage >= totalPages;
+    lastPageBtn.disabled = currentPage >= totalPages;
+
+    if (!total) {
       listEl.appendChild(el("div", "text_muted", "No personas found."));
       return;
     }
 
-    countEl.textContent = `(${sorted.length})`;
-    for (const id of sorted) {
+    for (const id of pageItems) {
       const row = el("div", "pme-persona");
       row.dataset.personaId = id;
       if (id === user_avatar) row.classList.add("is_active");
@@ -326,7 +385,11 @@ export function createPersonaList({ getPowerUser, bus }) {
       const title = getPersonaTitle(power, id);
       rightMeta.appendChild(el("div", "pme-persona-title", title || ""));
       if (hasLorebook(power, id)) {
-        rightMeta.appendChild(el("div", "pme-persona-lorebook", "Lorebook"));
+        const lorebookBadge = el("div", "pme-persona-lorebook");
+        lorebookBadge.title = "Persona has a lorebook";
+        lorebookBadge.setAttribute("aria-label", "Persona has a lorebook");
+        lorebookBadge.innerHTML = '<i class="fa-solid fa-globe"></i>';
+        rightMeta.appendChild(lorebookBadge);
       }
       nameRow.appendChild(rightMeta);
       meta.appendChild(nameRow);
@@ -377,14 +440,11 @@ export function createPersonaList({ getPowerUser, bus }) {
     scrollTop = listEl.scrollTop;
   });
 
-  refreshBtn.addEventListener("click", async () => {
-    personasCache = null;
-    await renderList();
-  });
-
   let searchTimer = /** @type {number|undefined} */ (undefined);
   search.addEventListener("input", () => {
     query = String(search.value ?? "");
+    currentPage = 1;
+    scrollTop = 0;
     if (searchTimer) window.clearTimeout(searchTimer);
     searchTimer = window.setTimeout(() => {
       searchTimer = undefined;
@@ -394,6 +454,44 @@ export function createPersonaList({ getPowerUser, bus }) {
 
   sort.addEventListener("change", () => {
     setPersonaSortMode(/** @type {any} */ (sort.value));
+    currentPage = 1;
+    scrollTop = 0;
+    void renderList();
+  });
+
+  firstPageBtn.addEventListener("click", () => {
+    currentPage = 1;
+    scrollTop = 0;
+    void renderList();
+  });
+
+  prevPageBtn.addEventListener("click", () => {
+    currentPage -= 1;
+    scrollTop = 0;
+    void renderList();
+  });
+
+  nextPageBtn.addEventListener("click", () => {
+    currentPage += 1;
+    scrollTop = 0;
+    void renderList();
+  });
+
+  lastPageBtn.addEventListener("click", () => {
+    currentPage = Number.MAX_SAFE_INTEGER;
+    scrollTop = 0;
+    void renderList();
+  });
+
+  perPageSelect.addEventListener("change", () => {
+    setPersonaPerPage(Number(perPageSelect.value));
+    currentPage = 1;
+    scrollTop = 0;
+    void renderList();
+  });
+
+  gridToggle.addEventListener("click", () => {
+    setPersonaGridViewEnabled(!getPersonaGridViewEnabled());
     void renderList();
   });
 
@@ -423,6 +521,7 @@ export function createPersonaList({ getPowerUser, bus }) {
       attachNativeCreateButton();
       search.value = query;
       sort.value = getPersonaSortMode();
+      perPageSelect.value = String(getPersonaPerPage());
       autoScrollNext = autoScroll;
       void renderList({ autoScroll });
     },

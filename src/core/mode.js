@@ -51,3 +51,39 @@ export function getPersonaSortMode() {
 export function setPersonaSortMode(mode) {
   accountStorage.setItem(PME.storage.personaSortKey, String(mode));
 }
+
+/**
+ * @returns {boolean}
+ */
+export function getPersonaGridViewEnabled() {
+  return accountStorage.getItem(PME.storage.personaGridViewKey) === "true";
+}
+
+/**
+ * @param {boolean} enabled
+ */
+export function setPersonaGridViewEnabled(enabled) {
+  accountStorage.setItem(PME.storage.personaGridViewKey, String(!!enabled));
+}
+
+const PERSONA_PER_PAGE_OPTIONS = [5, 10, 25, 50, 100, 250, 500, 1000];
+
+export { PERSONA_PER_PAGE_OPTIONS };
+
+/**
+ * @returns {number}
+ */
+export function getPersonaPerPage() {
+  const value = Number(accountStorage.getItem(PME.storage.personaPerPageKey));
+  return PERSONA_PER_PAGE_OPTIONS.includes(value) ? value : 10;
+}
+
+/**
+ * @param {number} value
+ */
+export function setPersonaPerPage(value) {
+  const next = PERSONA_PER_PAGE_OPTIONS.includes(Number(value))
+    ? Number(value)
+    : 10;
+  accountStorage.setItem(PME.storage.personaPerPageKey, String(next));
+}

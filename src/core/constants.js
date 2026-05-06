@@ -4,6 +4,8 @@ export const PME = {
   storage: {
     advancedModeKey: "pme_advanced_mode",
     personaSortKey: "pme_persona_sort",
+    personaGridViewKey: "Personas_GridView",
+    personaPerPageKey: "Personas_PerPage",
   },
   dom: {
     advancedToggleId: "pme_advanced_mode_toggle",
