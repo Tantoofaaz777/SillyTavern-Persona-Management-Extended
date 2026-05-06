@@ -562,13 +562,14 @@ body.rounded-avatars .pme-persona-avatar {
 
 .pme-group-top {
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto auto auto;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto auto auto;
+  gap: 6px;
   align-items: center;
 }
 
 .pme-group-title {
-  min-width: 160px;
+  min-width: 0;
+  width: 100%;
 }
 
 .pme-group-enabled {
@@ -601,8 +602,8 @@ body.rounded-avatars .pme-persona-avatar {
 
 .pme-item-top {
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto auto;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto auto;
+  gap: 6px;
   align-items: center;
 }
 
@@ -612,7 +613,8 @@ body.rounded-avatars .pme-persona-avatar {
 }
 
 .pme-item-title {
-  min-width: 140px;
+  min-width: 0;
+  width: 100%;
 }
 
 .pme-item-enabled {
@@ -750,10 +752,18 @@ body.rounded-avatars .pme-persona-avatar {
 .pme-adv-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--avatar-base-border-radius-round);
   object-fit: cover;
   flex: 0 0 auto;
   opacity: 0.95;
+}
+
+body.square-avatars .pme-adv-avatar {
+  border-radius: var(--avatar-base-border-radius) !important;
+}
+
+body.rounded-avatars .pme-adv-avatar {
+  border-radius: var(--avatar-base-border-radius-rounded) !important;
 }
 
 .pme-adv-chip-text {
@@ -821,6 +831,8 @@ body.rounded-avatars .pme-persona-avatar {
     flex-wrap: wrap;
   }
 
+  .pme-item-top,
+  .pme-group-top,
   .pme-additional-fullscreen .pme-item-top,
   .pme-additional-fullscreen .pme-group-top {
     display: flex;
@@ -828,6 +840,8 @@ body.rounded-avatars .pme-persona-avatar {
     align-items: center;
   }
 
+  .pme-item-title,
+  .pme-group-title,
   .pme-additional-fullscreen .pme-item-title,
   .pme-additional-fullscreen .pme-group-title {
     flex: 1 0 100%;
@@ -835,6 +849,8 @@ body.rounded-avatars .pme-persona-avatar {
     min-width: 0;
   }
 
+  .pme-item-enabled,
+  .pme-group-enabled,
   .pme-additional-fullscreen .pme-item-enabled,
   .pme-additional-fullscreen .pme-group-enabled {
     flex: 1 1 auto;
