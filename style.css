@@ -750,10 +750,18 @@ body.rounded-avatars .pme-persona-avatar {
 .pme-adv-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--avatar-base-border-radius-round);
   object-fit: cover;
   flex: 0 0 auto;
   opacity: 0.95;
+}
+
+body.square-avatars .pme-adv-avatar {
+  border-radius: var(--avatar-base-border-radius) !important;
+}
+
+body.rounded-avatars .pme-adv-avatar {
+  border-radius: var(--avatar-base-border-radius-rounded) !important;
 }
 
 .pme-adv-chip-text {
