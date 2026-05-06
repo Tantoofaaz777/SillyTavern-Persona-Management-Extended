@@ -619,6 +619,8 @@
 
 .pme-additional-fullscreen {
   text-align: left;
+  width: 100%;
+  min-width: 0;
 }
 
 .pme-additional-fullscreen .pme-item,
@@ -651,6 +653,32 @@
 .pme-item-text {
   width: 100%;
   resize: vertical;
+}
+
+@media (max-width: 700px) {
+  .pme-additional-fullscreen .pme-actions {
+    flex-wrap: wrap;
+  }
+
+  .pme-additional-fullscreen .pme-item-top,
+  .pme-additional-fullscreen .pme-group-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .pme-additional-fullscreen .pme-item-title,
+  .pme-additional-fullscreen .pme-group-title {
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .pme-additional-fullscreen .pme-item-enabled,
+  .pme-additional-fullscreen .pme-group-enabled {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
 .pme-list {
